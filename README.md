@@ -27,6 +27,10 @@ Implementação de referência de uma arquitetura orientada a eventos (EDA) com 
 
 ![Fluxo de negócio de pedidos omnicanal](docs/images/fluxo-negocio-pedidos-omnicanal.png)
 
+## Trâmite da mensagem — pedido omnicanal
+
+![Trâmite da mensagem — pedido omnicanal](docs/images/tramite-mensagem-pedido-omnicanal.png)
+
 ## Evolução da arquitetura: design patterns EDA
 
 Esta implementação é uma fundação que pode evoluir progressivamente para outros padrões de arquitetura orientada a eventos, conforme o volume, a criticidade e a autonomia dos domínios de negócio aumentarem. A adoção deve ser incremental: não é necessário implementar todos os padrões desde o início.
