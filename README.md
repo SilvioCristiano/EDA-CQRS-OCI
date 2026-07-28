@@ -27,6 +27,27 @@ Implementação de referência de uma arquitetura orientada a eventos (EDA) com 
 
 ![Fluxo de negócio de pedidos omnicanal](docs/images/fluxo-negocio-pedidos-omnicanal.png)
 
+## Evolução da arquitetura: design patterns EDA
+
+Esta implementação é uma fundação que pode evoluir progressivamente para outros padrões de arquitetura orientada a eventos, conforme o volume, a criticidade e a autonomia dos domínios de negócio aumentarem. A adoção deve ser incremental: não é necessário implementar todos os padrões desde o início.
+
+| Pattern | Objetivo | Aplicação nesta arquitetura OCI |
+|---|---|---|
+| **Pub/Sub** | Desacoplar produtores e consumidores. | O `OCI Streaming with Apache Kafka` distribui eventos de domínio a múltiplos consumer groups. |
+| **Event Notification** | Sinalizar que algo ocorreu e permitir busca posterior de detalhes. | Eventos leves, como `OrderStatusChanged`, referenciam o agregado no write model. |
+| **Event-Carried State Transfer** | Levar no evento o estado necessário ao consumidor. | Projeções e integrações recebem campos do pedido sem consultar a API de comando. |
+| **Event Sourcing** | Persistir a sequência de fatos do domínio, em vez de somente o estado final. | Evolução indicada para domínios com forte auditoria e reconstrução histórica; exige decisão explícita de retenção e governança. |
+| **CQRS** | Separar modelos e cargas de escrita e leitura. | Autonomous Database no write model e Oracle NoSQL Database no read model. |
+| **Saga** | Coordenar transações distribuídas com ações compensatórias. | Orquestra ou coreografa pagamento, estoque e logística por eventos; por exemplo, compensar uma reserva quando o pagamento falhar. |
+| **Transactional Outbox** | Evitar inconsistência entre banco e publicação do evento. | A transação grava o agregado e a outbox no ADB; um publisher publica somente registros confirmados no Kafka. |
+| **Idempotent Consumer** | Processar eventos repetidos sem efeitos duplicados. | Workers no OKE/Functions registram `eventId` e versão antes do upsert no read model. |
+| **Dead Letter Topic (DLT)** | Isolar eventos que excederam as tentativas de processamento. | Tópicos Kafka dedicados preservam payload, erro e contexto para análise e reprocessamento seguro. |
+| **Retry with Backoff** | Reduzir pressão sobre dependências temporariamente indisponíveis. | Consumidores aplicam tentativas com backoff exponencial e jitter antes de encaminhar à DLT. |
+| **Event Aggregator** | Consolidar eventos menores em uma visão de negócio. | Um worker pode compor eventos de pedido, pagamento e expedição para publicar `OrderFulfillmentUpdated`. |
+| **Stream Processing / Event Pipeline** | Filtrar, enriquecer, transformar ou rotear eventos continuamente. | Consumers dedicados ou Kafka Connect processam e encaminham eventos a integrações, Object Storage ou outros tópicos. |
+
+> **Prioridade recomendada:** começar com **Pub/Sub, CQRS, Transactional Outbox, Idempotent Consumer, Retry/DLT** e, quando o pedido envolver vários serviços com compensação, adicionar **Saga**. Event Sourcing deve ser adotado apenas quando a necessidade de auditoria e reconstrução justificar seu custo operacional.
+
 ## Decisões de arquitetura
 
 | Camada | Serviço | Decisão operacional |
