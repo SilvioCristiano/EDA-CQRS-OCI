@@ -1,6 +1,31 @@
 # EDA + CQRS na OCI
 
-Implementação de referência do desenho: comandos síncronos gravam o estado e publicam eventos; projeções assíncronas atualizam um modelo de leitura no Oracle NoSQL Database Cloud Service. A infraestrutura é declarada em Terraform e as duas funções Python são pontos de partida implantáveis no OCI Functions.
+Implementação de referência de uma arquitetura orientada a eventos (EDA) com Command Query Responsibility Segregation (CQRS) na Oracle Cloud Infrastructure. Comandos síncronos validam e gravam o estado do domínio; a partir da confirmação transacional, eventos são publicados no **OCI Streaming with Apache Kafka** e projeções assíncronas atualizam modelos de leitura no Oracle NoSQL Database Cloud Service.
+
+## EDA e CQRS
+
+**EDA** desacopla os domínios de negócio por eventos versionados. Estoque, pagamento, logística, notificações e integrações externas reagem de forma independente a uma mudança de estado, sem transformar a API de pedidos em um ponto central de dependências.
+
+**CQRS** separa as responsabilidades de escrita e leitura. O *Command/Write side* preserva consistência e regras de negócio no Autonomous Database; o *Query/Read side* mantém projeções específicas, escaláveis e otimizadas para consulta no Oracle NoSQL Database.
+
+## Valor de negócio e técnico
+
+- **Resiliência:** falhas ou lentidão em um consumidor, como logística, não bloqueiam o aceite do pedido. Reprocessamento, DLQ, idempotência e retenção dos eventos permitem recuperação controlada.
+- **Escalabilidade:** APIs de comando, consumidores Kafka e projeções de leitura escalam de forma independente, acompanhando picos de canais digitais e consultas sem sobrecarregar o banco transacional.
+- **Segurança:** os serviços permanecem privados na VCN, com API Gateway autenticado por JWT, IAM de mínimo privilégio, segredos no OCI Vault, NSGs restritivos e trilhas de auditoria centralizadas.
+- **Evolução e integração:** novos consumidores podem ser adicionados a eventos existentes sem alterar o fluxo transacional do pedido, reduzindo acoplamento e acelerando a entrega de novas capacidades.
+
+## Arquitetura High Level
+
+![Arquitetura High Level EDA + CQRS na OCI](docs/images/arquitetura-high-level.png)
+
+## Arquitetura Técnica
+
+![Arquitetura Técnica EDA + CQRS na OCI](docs/images/arquitetura-tecnica.png)
+
+## Fluxo de negócio de pedidos omnicanal
+
+![Fluxo de negócio de pedidos omnicanal](docs/images/fluxo-negocio-pedidos-omnicanal.png)
 
 ## Decisões de arquitetura
 
