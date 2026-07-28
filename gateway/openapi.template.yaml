@@ -1,0 +1,42 @@
+openapi: 3.0.3
+info:
+  title: edacqrs-api
+  version: '1.0'
+requestPolicies:
+  authentication:
+    type: JWT_AUTHENTICATION
+    tokenHeader: Authorization
+    tokenAuthScheme: Bearer
+    validationPolicy:
+      type: REMOTE_JWKS
+      jwksUri: __API_JWKS_URI__
+      issuer: __API_JWT_ISSUER__
+      audiences: [__API_JWT_AUDIENCE__]
+paths:
+  /v1/orders:
+    post:
+      operationId: createOrder
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: {type: string, minLength: 16, maxLength: 128}
+      responses:
+        '202': {description: Command accepted}
+      x-oci-backend:
+        type: ORACLE_FUNCTIONS_BACKEND
+        functionId: __COMMAND_FUNCTION_OCID__
+  /v1/orders/{id}:
+    get:
+      operationId: getOrder
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: {type: string}
+      responses:
+        '200': {description: Projection found}
+        '404': {description: Projection not found}
+      x-oci-backend:
+        type: ORACLE_FUNCTIONS_BACKEND
+        functionId: __QUERY_FUNCTION_OCID__

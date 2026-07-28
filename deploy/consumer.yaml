@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders-projection
+  namespace: edacqrs
+spec:
+  replicas: 3
+  selector: {matchLabels: {app: orders-projection}}
+  template:
+    metadata: {labels: {app: orders-projection}}
+    spec:
+      serviceAccountName: edacqrs-consumer
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: consumer
+          image: __CONSUMER_IMAGE__
+          command: ["python", "consumer.py"]
+          envFrom: [{secretRef: {name: edacqrs-runtime}}]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: ["ALL"]}
+          resources:
+            requests: {cpu: 250m, memory: 512Mi}
+            limits: {cpu: "1", memory: 1Gi}
+          readinessProbe:
+            exec: {command: ["sh", "-c", "test -n \"$KAFKA_BOOTSTRAP_SERVERS\" && test -n \"$DB_DSN\""]}
+            initialDelaySeconds: 10
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata: {name: orders-projection, namespace: edacqrs}
+spec:
+  minAvailable: 2
+  selector: {matchLabels: {app: orders-projection}}

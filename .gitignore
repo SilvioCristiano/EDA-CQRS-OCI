@@ -1,0 +1,7 @@
+.DS_Store
+~$*.pptx
+*.inspect.ndjson
+
+# Rascunhos substituídos pelo deck Enterprise final
+EDA_CQRS_OCI_Arquitetura_Detalhada.pptx
+EDA_CQRS_OCI_Arquiteturas*.pptx

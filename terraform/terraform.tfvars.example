@@ -1,0 +1,21 @@
+# [PREENCHER] Valores específicos da tenancy, do compartment e do ambiente.
+tenancy_ocid       = "ocid1.tenancy.oc1..EXEMPLO"
+compartment_ocid   = "ocid1.compartment.oc1..EXEMPLO"
+region             = "sa-saopaulo-1"
+adb_admin_password = "troque-por-uma-senha-forte"
+
+# [AJUSTÁVEL] Nomes e capacidade. Produção: PRODUCTION e três brokers.
+project                  = "edacqrs"
+environment              = "dev"
+kafka_cluster_type       = "PRODUCTION"
+kafka_broker_node_count  = 3
+kafka_broker_ocpu_count  = 1
+kafka_broker_storage_gbs = 500
+kafka_topic_partitions   = 6
+
+# [PREENCHER] Valores disponíveis e compatíveis na região OCI.
+kafka_version           = "<versao-disponivel-na-regiao>"
+kafka_coordination_type = "<tipo-compativel-com-a-versao>"
+
+# [GERADO AUTOMATICAMENTE] Não informe OCIDs do cluster, bootstrap servers,
+# tópico, aplicações Functions, ADB ou API Gateway. Use `terraform output`.

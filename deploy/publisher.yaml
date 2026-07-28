@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders-publisher
+  namespace: edacqrs
+spec:
+  replicas: 2
+  selector: {matchLabels: {app: orders-publisher}}
+  template:
+    metadata: {labels: {app: orders-publisher}}
+    spec:
+      serviceAccountName: edacqrs-publisher
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: publisher
+          image: __PUBLISHER_IMAGE__
+          command: ["python", "outbox_publisher.py"]
+          envFrom: [{secretRef: {name: edacqrs-runtime}}]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: ["ALL"]}
+          resources:
+            requests: {cpu: 250m, memory: 512Mi}
+            limits: {cpu: "1", memory: 1Gi}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata: {name: orders-publisher, namespace: edacqrs}
+spec:
+  minAvailable: 1
+  selector: {matchLabels: {app: orders-publisher}}
